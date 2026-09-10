@@ -1,5 +1,5 @@
 # ---- Stage 1: build the frontend (PWA) ----
-FROM node:20-slim AS web-build
+FROM node:22-slim AS web-build
 WORKDIR /repo
 
 COPY web/package.json web/package-lock.json web/
@@ -9,7 +9,7 @@ COPY web/ web/
 RUN cd web && npm run build
 
 # ---- Stage 2: backend + runtime ----
-FROM node:20-slim AS server
+FROM node:22-slim AS server
 WORKDIR /app
 
 COPY server/package.json server/package-lock.json ./
