@@ -22,6 +22,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg}'],
+        // Without this, Workbox's SPA navigation fallback intercepts file
+        // download links (they're navigation-mode requests) and serves the
+        // cached index.html instead of proxying to the actual API route.
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],
