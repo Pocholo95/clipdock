@@ -32,6 +32,23 @@ export function sweep(io) {
   return deletedCount;
 }
 
+// Manual "empty the chat now" action: deletes every non-pinned message
+// immediately, ignoring retention and any per-message custom expiry —
+// same reach as deleting each one by hand, just batched.
+export function purgeAll(io) {
+  const candidates = db.prepare('SELECT * FROM messages WHERE pinned = 0').all();
+  let deletedCount = 0;
+
+  for (const row of candidates) {
+    if (row.file_path) fs.unlink(row.file_path, () => {});
+    db.prepare('DELETE FROM messages WHERE id = ?').run(row.id);
+    io.emit('message:deleted', { id: row.id });
+    deletedCount++;
+  }
+
+  return deletedCount;
+}
+
 export function startCleanupJob(io, intervalMs = 60_000) {
   const timer = setInterval(() => sweep(io), intervalMs);
   sweep(io);

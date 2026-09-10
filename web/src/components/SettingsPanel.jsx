@@ -27,18 +27,18 @@ export default function SettingsPanel({ settings, onClose, onSaved }) {
   }
 
   async function cleanNow() {
-    if (!window.confirm('¿Limpiar ahora? Se borran los mensajes vencidos según la configuración actual (los fijados no se tocan).')) {
+    if (!window.confirm('¿Vaciar el chat ahora? Se borran TODOS los mensajes no fijados, sin importar su antigüedad ni la retención configurada.')) {
       return;
     }
     setCleaning(true);
     try {
       const { deletedCount } = await api.cleanNow();
       showToast(
-        deletedCount > 0 ? `Se eliminaron ${deletedCount} mensaje${deletedCount === 1 ? '' : 's'}` : 'No había nada para limpiar',
+        deletedCount > 0 ? `Se eliminaron ${deletedCount} mensaje${deletedCount === 1 ? '' : 's'}` : 'No había mensajes para eliminar',
         'success'
       );
     } catch {
-      showToast('No se pudo limpiar ahora', 'error');
+      showToast('No se pudo vaciar el chat', 'error');
     } finally {
       setCleaning(false);
     }
@@ -87,8 +87,8 @@ export default function SettingsPanel({ settings, onClose, onSaved }) {
           </button>
         </div>
 
-        <button className="clean-now-btn" disabled={cleaning} onClick={cleanNow}>
-          🧹 {cleaning ? 'Limpiando…' : 'Limpiar ahora'}
+        <button className="clean-now-btn danger" disabled={cleaning} onClick={cleanNow}>
+          🧹 {cleaning ? 'Vaciando…' : 'Vaciar chat ahora'}
         </button>
 
         <button className="modal-close" onClick={onClose}>

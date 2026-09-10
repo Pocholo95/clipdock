@@ -527,6 +527,17 @@ button:disabled {
   color: var(--text-dim);
 }
 
+.clean-now-btn.danger {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.clean-now-btn.danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
 .qr-image {
   align-self: center;
   border-radius: 12px;

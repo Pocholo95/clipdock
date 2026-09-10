@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../db.js';
-import { sweep } from '../cleanup.js';
+import { purgeAll } from '../cleanup.js';
 
 export function settingsRouter(io) {
   const router = express.Router();
@@ -24,7 +24,7 @@ export function settingsRouter(io) {
   });
 
   router.post('/settings/clean-now', (_req, res) => {
-    const deletedCount = sweep(io);
+    const deletedCount = purgeAll(io);
     res.json({ deletedCount });
   });
 
