@@ -1,11 +1,15 @@
 :root {
-  --bg: #111318;
-  --bg-elevated: #1a1d24;
-  --border: #2a2e38;
-  --text: #e6e8ec;
-  --text-dim: #9096a3;
-  --accent: #3b82f6;
-  --danger: #ef4444;
+  --bg: #14121c;
+  --bg-elevated: #1e1a2b;
+  --bg-hover: #282239;
+  --border: #332c47;
+  --text: #ece9f5;
+  --text-dim: #9a90b3;
+  --accent: #8b5cf6;
+  --accent-strong: #a78bfa;
+  --own-bubble-bg: #362a56;
+  --own-bubble-border: #4f3d78;
+  --danger: #f43f5e;
 }
 
 * {
@@ -53,6 +57,7 @@ body {
 
 .setup-card h1 {
   margin: 0;
+  color: var(--accent-strong);
 }
 
 .setup-subtitle {
@@ -83,12 +88,22 @@ input, textarea, button {
   padding: 10px 12px;
 }
 
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 button {
   cursor: pointer;
   background: var(--accent);
   border-color: var(--accent);
   color: white;
   font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+button:hover {
+  background: var(--accent-strong);
 }
 
 button:disabled {
@@ -115,6 +130,7 @@ button:disabled {
 .app-header h1 {
   margin: 0;
   font-size: 1.1em;
+  color: var(--accent-strong);
 }
 
 .device-badge {
@@ -141,6 +157,11 @@ button:disabled {
   font-weight: 500;
   padding: 6px 14px;
   white-space: nowrap;
+}
+
+.filter-bar button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
 .filter-bar button.active {
@@ -187,14 +208,14 @@ button:disabled {
 }
 
 .bubble-row.own .bubble {
-  background: #1e3a5f;
-  border-color: #2b4f7a;
+  background: var(--own-bubble-bg);
+  border-color: var(--own-bubble-border);
 }
 
 .bubble-header {
   display: flex;
   gap: 8px;
-  align-items: baseline;
+  align-items: center;
   margin-bottom: 4px;
   font-size: 0.78em;
   color: var(--text-dim);
@@ -202,7 +223,7 @@ button:disabled {
 
 .bubble-device {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .bubble-content p {
@@ -212,7 +233,7 @@ button:disabled {
 }
 
 .bubble-content a {
-  color: var(--accent);
+  color: var(--accent-strong);
   word-break: break-all;
 }
 
@@ -235,54 +256,70 @@ button:disabled {
   font-size: 0.85em;
 }
 
-.bubble-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  font-size: 0.8em;
+.pin-badge {
+  line-height: 1;
 }
 
-.bubble-actions button {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  padding: 4px 8px;
-  font-weight: 500;
-}
-
-.bubble-actions button.danger {
-  color: var(--danger);
-}
-
-.expiry-menu {
+.bubble-menu {
   position: relative;
+  margin-left: auto;
 }
 
-.expiry-dropdown {
+.menu-trigger {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.menu-trigger:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.menu-dropdown {
   position: absolute;
-  bottom: 110%;
-  left: 0;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  min-width: 180px;
+  min-width: 190px;
   z-index: 10;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.expiry-dropdown button {
+.menu-dropdown button {
   background: transparent;
   border: none;
   border-radius: 0;
   text-align: left;
   color: var(--text);
-  padding: 8px 12px;
+  padding: 9px 12px;
+  font-weight: 500;
+  font-size: 0.95em;
 }
 
-.expiry-dropdown button:hover {
-  background: var(--bg);
+.menu-dropdown button:hover {
+  background: var(--bg-hover);
+}
+
+.menu-dropdown button.danger {
+  color: var(--danger);
+}
+
+.menu-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
 }
 
 .composer {
@@ -294,7 +331,7 @@ button:disabled {
 }
 
 .composer.drag-over {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .composer textarea {
@@ -307,14 +344,10 @@ button:disabled {
   gap: 6px;
 }
 
-.pin-badge {
-  margin-left: auto;
-}
-
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 8, 16, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,6 +368,7 @@ button:disabled {
 
 .modal-card h2 {
   margin: 0;
+  color: var(--accent-strong);
 }
 
 .modal-subtitle {

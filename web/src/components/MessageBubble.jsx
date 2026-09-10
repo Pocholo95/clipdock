@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api, fileUrlWithToken } from '../api.js';
 
 const EXPIRY_OPTIONS = [
@@ -22,8 +22,28 @@ function formatSize(bytes) {
 
 export default function MessageBubble({ message, isOwn, onChanged }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    function handleEscape(e) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
 
   async function togglePin() {
+    setMenuOpen(false);
     const updated = await api.patchMessage(message.id, { pinned: !message.pinned });
     onChanged(updated);
   }
@@ -36,6 +56,7 @@ export default function MessageBubble({ message, isOwn, onChanged }) {
   }
 
   async function remove() {
+    setMenuOpen(false);
     if (!window.confirm('¿Eliminar este mensaje?')) return;
     await api.deleteMessage(message.id);
     onChanged(null, message.id);
@@ -48,6 +69,27 @@ export default function MessageBubble({ message, isOwn, onChanged }) {
           <span className="bubble-device">{message.deviceName}</span>
           <span className="bubble-time">{formatTime(message.createdAt)}</span>
           {message.pinned && <span className="pin-badge" title="Fijado">📌</span>}
+
+          <div className="bubble-menu" ref={menuRef}>
+            <button className="menu-trigger" onClick={() => setMenuOpen((v) => !v)} title="Opciones">
+              ⋮
+            </button>
+            {menuOpen && (
+              <div className="menu-dropdown">
+                <button onClick={togglePin}>{message.pinned ? '📌 Desfijar' : '📌 Fijar'}</button>
+                <div className="menu-separator" />
+                {EXPIRY_OPTIONS.map((opt) => (
+                  <button key={opt.label} onClick={() => setExpiry(opt.value)}>
+                    {opt.label}
+                  </button>
+                ))}
+                <div className="menu-separator" />
+                <button className="danger" onClick={remove}>
+                  🗑 Eliminar
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bubble-content">
@@ -67,27 +109,6 @@ export default function MessageBubble({ message, isOwn, onChanged }) {
               📄 {message.fileName} <span className="bubble-filesize">{formatSize(message.sizeBytes)}</span>
             </a>
           )}
-        </div>
-
-        <div className="bubble-actions">
-          <button onClick={togglePin} title={message.pinned ? 'Desfijar' : 'Fijar'}>
-            {message.pinned ? 'Desfijar' : 'Fijar'}
-          </button>
-          <div className="expiry-menu">
-            <button onClick={() => setMenuOpen((v) => !v)}>Limpiar…</button>
-            {menuOpen && (
-              <div className="expiry-dropdown">
-                {EXPIRY_OPTIONS.map((opt) => (
-                  <button key={opt.label} onClick={() => setExpiry(opt.value)}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button onClick={remove} className="danger" title="Eliminar">
-            Eliminar
-          </button>
         </div>
       </div>
     </div>

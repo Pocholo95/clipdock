@@ -11,8 +11,8 @@ export default defineConfig({
         name: 'Clipboard',
         short_name: 'Clipboard',
         description: 'Clipboard compartido entre tus dispositivos',
-        theme_color: '#111318',
-        background_color: '#111318',
+        theme_color: '#14121c',
+        background_color: '#14121c',
         display: 'standalone',
         start_url: '/',
         icons: [
