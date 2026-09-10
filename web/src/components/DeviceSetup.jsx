@@ -10,7 +10,7 @@ export default function DeviceSetup({ needsPassphrase, onReady }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Elegí un nombre para este dispositivo');
+      setError('Elige un nombre para este dispositivo');
       return;
     }
 
@@ -29,7 +29,7 @@ export default function DeviceSetup({ needsPassphrase, onReady }) {
       localStorage.setItem('clipboard_device_name', device.name);
       onReady(device);
     } catch (err) {
-      setError(needsPassphrase ? 'Passphrase incorrecta' : 'No se pudo continuar, intentá de nuevo');
+      setError(needsPassphrase ? 'Passphrase incorrecta' : 'No se pudo continuar, intenta de nuevo');
     } finally {
       setBusy(false);
     }
@@ -39,7 +39,7 @@ export default function DeviceSetup({ needsPassphrase, onReady }) {
     <div className="setup-screen">
       <form className="setup-card" onSubmit={handleSubmit}>
         <h1>Clipboard</h1>
-        <p className="setup-subtitle">Configurá este dispositivo para empezar</p>
+        <p className="setup-subtitle">Configura este dispositivo para empezar</p>
 
         {needsPassphrase && (
           <label className="field">

@@ -64,7 +64,7 @@ export default function Composer({ deviceId }) {
       onDrop={handleDrop}
     >
       <textarea
-        placeholder="Escribí texto, pegá un link, o arrastrá/pegá un archivo…"
+        placeholder="Escribe texto, pega un link, o arrastra/pega un archivo…"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}

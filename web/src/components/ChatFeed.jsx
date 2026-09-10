@@ -10,7 +10,7 @@ export default function ChatFeed({ messages, currentDeviceId, onChanged }) {
 
   return (
     <div className="chat-feed">
-      {messages.length === 0 && <p className="chat-empty">No hay mensajes todavía. Mandá algo 👋</p>}
+      {messages.length === 0 && <p className="chat-empty">No hay mensajes todavía. Envía algo 👋</p>}
       {messages.map((message) => (
         <MessageBubble
           key={message.id}
