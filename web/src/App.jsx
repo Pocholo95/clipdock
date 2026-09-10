@@ -9,6 +9,7 @@ import FilterBar from './components/FilterBar.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import AddDeviceModal from './components/AddDeviceModal.jsx';
 import ToastContainer from './components/ToastContainer.jsx';
+import SelectionBar from './components/SelectionBar.jsx';
 
 export default function App() {
   const [authStatus, setAuthStatus] = useState(null);
@@ -19,6 +20,8 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [connected, setConnected] = useState(true);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
   const wasConnected = useRef(true);
 
   useEffect(() => {
@@ -82,6 +85,12 @@ export default function App() {
     });
     socket.on('message:deleted', ({ id }) => {
       setMessages((prev) => prev.filter((m) => m.id !== id));
+      setSelectedIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     });
     socket.on('settings:updated', (s) => setSettings(s));
 
@@ -98,6 +107,39 @@ export default function App() {
       setMessages((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
     }
   }, []);
+
+  const toggleSelect = useCallback((id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  function cancelSelection() {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function bulkPin(pinned) {
+    try {
+      await api.bulkSetPinned([...selectedIds], pinned);
+      cancelSelection();
+    } catch {
+      showToast('No se pudo actualizar los mensajes seleccionados', 'error');
+    }
+  }
+
+  async function bulkDelete() {
+    if (!window.confirm(`¿Eliminar ${selectedIds.size} mensaje${selectedIds.size === 1 ? '' : 's'}?`)) return;
+    try {
+      await api.bulkDelete([...selectedIds]);
+      cancelSelection();
+    } catch {
+      showToast('No se pudo eliminar los mensajes seleccionados', 'error');
+    }
+  }
 
   if (authStatus === null) {
     return <div className="loading-screen">Cargando…</div>;
@@ -130,18 +172,32 @@ export default function App() {
         <span className="device-badge">{device.name}</span>
       </header>
 
-      <FilterBar
-        value={filter}
-        onChange={setFilter}
-        onOpenSettings={() => setShowSettings(true)}
-        onOpenAddDevice={() => setShowAddDevice(true)}
-      />
+      {selectionMode ? (
+        <SelectionBar
+          count={selectedIds.size}
+          onPin={() => bulkPin(true)}
+          onUnpin={() => bulkPin(false)}
+          onDelete={bulkDelete}
+          onCancel={cancelSelection}
+        />
+      ) : (
+        <FilterBar
+          value={filter}
+          onChange={setFilter}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenAddDevice={() => setShowAddDevice(true)}
+          onEnterSelection={() => setSelectionMode(true)}
+        />
+      )}
 
       <ChatFeed
         messages={visibleMessages}
         currentDeviceId={device.id}
         defaultRetentionSeconds={settings.defaultRetentionSeconds}
         onChanged={handleChanged}
+        selectionMode={selectionMode}
+        selectedIds={selectedIds}
+        onToggleSelect={toggleSelect}
       />
 
       <Composer deviceId={device.id} />

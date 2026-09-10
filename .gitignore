@@ -4,3 +4,4 @@ server/web-dist/
 web/dist/
 .env
 *.log
+docker-compose.traefik.yml

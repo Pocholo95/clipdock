@@ -12,6 +12,7 @@ const PRESETS = [
 export default function SettingsPanel({ settings, onClose, onSaved }) {
   const [customHours, setCustomHours] = useState('');
   const [saving, setSaving] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
 
   async function save(seconds) {
     setSaving(true);
@@ -22,6 +23,24 @@ export default function SettingsPanel({ settings, onClose, onSaved }) {
       showToast('No se pudo guardar la configuración', 'error');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function cleanNow() {
+    if (!window.confirm('¿Limpiar ahora? Se borran los mensajes vencidos según la configuración actual (los fijados no se tocan).')) {
+      return;
+    }
+    setCleaning(true);
+    try {
+      const { deletedCount } = await api.cleanNow();
+      showToast(
+        deletedCount > 0 ? `Se eliminaron ${deletedCount} mensaje${deletedCount === 1 ? '' : 's'}` : 'No había nada para limpiar',
+        'success'
+      );
+    } catch {
+      showToast('No se pudo limpiar ahora', 'error');
+    } finally {
+      setCleaning(false);
     }
   }
 
@@ -67,6 +86,10 @@ export default function SettingsPanel({ settings, onClose, onSaved }) {
             Aplicar
           </button>
         </div>
+
+        <button className="clean-now-btn" disabled={cleaning} onClick={cleanNow}>
+          🧹 {cleaning ? 'Limpiando…' : 'Limpiar ahora'}
+        </button>
 
         <button className="modal-close" onClick={onClose}>
           Cerrar

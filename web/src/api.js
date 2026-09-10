@@ -53,7 +53,11 @@ export const api = {
   },
   patchMessage: (id, patch) => request(`/messages/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteMessage: (id) => request(`/messages/${id}`, { method: 'DELETE' }),
+  bulkSetPinned: (ids, pinned) =>
+    request('/messages/bulk', { method: 'PATCH', body: JSON.stringify({ ids, pinned }) }),
+  bulkDelete: (ids) => request('/messages/bulk', { method: 'DELETE', body: JSON.stringify({ ids }) }),
   getSettings: () => request('/settings'),
   putSettings: (defaultRetentionSeconds) =>
     request('/settings', { method: 'PUT', body: JSON.stringify({ defaultRetentionSeconds }) }),
+  cleanNow: () => request('/settings/clean-now', { method: 'POST' }),
 };

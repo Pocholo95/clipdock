@@ -6,11 +6,12 @@ function getDefaultRetentionSeconds() {
   return Number(row?.value ?? 0);
 }
 
-function sweep(io) {
+export function sweep(io) {
   const defaultRetentionSeconds = getDefaultRetentionSeconds();
   const now = Date.now();
 
   const candidates = db.prepare('SELECT * FROM messages WHERE pinned = 0').all();
+  let deletedCount = 0;
 
   for (const row of candidates) {
     let expiresAt;
@@ -24,8 +25,11 @@ function sweep(io) {
       if (row.file_path) fs.unlink(row.file_path, () => {});
       db.prepare('DELETE FROM messages WHERE id = ?').run(row.id);
       io.emit('message:deleted', { id: row.id });
+      deletedCount++;
     }
   }
+
+  return deletedCount;
 }
 
 export function startCleanupJob(io, intervalMs = 60_000) {

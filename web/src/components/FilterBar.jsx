@@ -6,7 +6,7 @@ const FILTERS = [
   { value: 'image', label: 'Fotos' },
 ];
 
-export default function FilterBar({ value, onChange, onOpenSettings, onOpenAddDevice }) {
+export default function FilterBar({ value, onChange, onOpenSettings, onOpenAddDevice, onEnterSelection }) {
   return (
     <div className="filter-bar">
       {FILTERS.map((f) => (
@@ -18,7 +18,10 @@ export default function FilterBar({ value, onChange, onOpenSettings, onOpenAddDe
           {f.label}
         </button>
       ))}
-      <button className="icon-trigger icon-trigger-first" onClick={onOpenAddDevice} title="Agregar dispositivo">
+      <button className="icon-trigger icon-trigger-first" onClick={onEnterSelection} title="Seleccionar varios">
+        ☑️
+      </button>
+      <button className="icon-trigger" onClick={onOpenAddDevice} title="Agregar dispositivo">
         📱
       </button>
       <button className="icon-trigger" onClick={onOpenSettings} title="Configuración">

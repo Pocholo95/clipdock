@@ -186,6 +186,48 @@ button:disabled {
   margin-left: auto;
 }
 
+.selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.selection-bar .icon-trigger {
+  padding: 6px 10px;
+}
+
+.selection-count {
+  font-size: 0.9em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.selection-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  overflow-x: auto;
+}
+
+.selection-actions button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.selection-actions button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.selection-actions button:disabled {
+  opacity: 0.4;
+}
+
 .conn-indicator {
   display: inline-flex;
   align-items: center;
@@ -245,6 +287,18 @@ button:disabled {
 .bubble-row.own .bubble {
   background: var(--own-bubble-bg);
   border-color: var(--own-bubble-border);
+}
+
+.bubble.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.bubble-checkbox {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  accent-color: var(--accent);
 }
 
 .bubble-header {

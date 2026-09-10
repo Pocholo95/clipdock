@@ -1,5 +1,6 @@
 import express from 'express';
 import { db } from '../db.js';
+import { sweep } from '../cleanup.js';
 
 export function settingsRouter(io) {
   const router = express.Router();
@@ -20,6 +21,11 @@ export function settingsRouter(io) {
 
     io.emit('settings:updated', { defaultRetentionSeconds: value });
     res.json({ defaultRetentionSeconds: value });
+  });
+
+  router.post('/settings/clean-now', (_req, res) => {
+    const deletedCount = sweep(io);
+    res.json({ deletedCount });
   });
 
   return router;

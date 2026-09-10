@@ -122,6 +122,46 @@ export function messagesRouter(io) {
     res.status(201).json(message);
   });
 
+  // Registered before /messages/:id so "bulk" isn't swallowed as an :id param.
+  router.patch('/messages/bulk', (req, res) => {
+    const { ids, pinned } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length || typeof pinned !== 'boolean') {
+      return res.status(400).json({ error: 'ids and pinned are required' });
+    }
+
+    const updated = [];
+    for (const id of ids) {
+      const row = db.prepare('SELECT * FROM messages WHERE id = ?').get(id);
+      if (!row) continue;
+      db.prepare('UPDATE messages SET pinned = ? WHERE id = ?').run(pinned ? 1 : 0, id);
+      const fresh = db.prepare(`${SELECT_WITH_DEVICE} WHERE messages.id = ?`).get(id);
+      const message = serializeMessage(fresh);
+      updated.push(message);
+      io.emit('message:updated', message);
+    }
+
+    res.json(updated);
+  });
+
+  router.delete('/messages/bulk', (req, res) => {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ error: 'ids are required' });
+    }
+
+    let deletedCount = 0;
+    for (const id of ids) {
+      const row = db.prepare('SELECT * FROM messages WHERE id = ?').get(id);
+      if (!row) continue;
+      if (row.file_path) fs.unlink(row.file_path, () => {});
+      db.prepare('DELETE FROM messages WHERE id = ?').run(id);
+      io.emit('message:deleted', { id });
+      deletedCount++;
+    }
+
+    res.json({ deletedCount });
+  });
+
   router.patch('/messages/:id', (req, res) => {
     const row = db.prepare('SELECT * FROM messages WHERE id = ?').get(req.params.id);
     if (!row) return res.status(404).json({ error: 'not found' });

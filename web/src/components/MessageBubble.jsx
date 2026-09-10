@@ -43,7 +43,15 @@ function getExpiryLabel(message, defaultRetentionSeconds) {
   return `Se borra ${formatCountdown(effectiveExpiresAt - Date.now())}`;
 }
 
-export default function MessageBubble({ message, isOwn, defaultRetentionSeconds, onChanged }) {
+export default function MessageBubble({
+  message,
+  isOwn,
+  defaultRetentionSeconds,
+  onChanged,
+  selectionMode,
+  selected,
+  onToggleSelect,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [, setTick] = useState(0);
@@ -118,32 +126,46 @@ export default function MessageBubble({ message, isOwn, defaultRetentionSeconds,
 
   return (
     <div className={`bubble-row ${isOwn ? 'own' : ''}`}>
-      <div className="bubble">
-        <div className="bubble-header">
+      <div className={`bubble ${selected ? 'selected' : ''}`}>
+        <div
+          className="bubble-header"
+          onClick={selectionMode ? () => onToggleSelect(message.id) : undefined}
+        >
+          {selectionMode && (
+            <input
+              type="checkbox"
+              className="bubble-checkbox"
+              checked={!!selected}
+              onChange={() => onToggleSelect(message.id)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           <span className="bubble-device">{message.deviceName}</span>
           <span className="bubble-time">{formatTime(message.createdAt)}</span>
           {message.pinned && <span className="pin-badge" title="Fijado">📌</span>}
 
-          <div className="bubble-menu" ref={menuRef}>
-            <button className="menu-trigger" onClick={() => setMenuOpen((v) => !v)} title="Opciones">
-              ⋮
-            </button>
-            {menuOpen && (
-              <div className="menu-dropdown">
-                <button onClick={togglePin}>{message.pinned ? '📌 Desfijar' : '📌 Fijar'}</button>
-                <div className="menu-separator" />
-                {EXPIRY_OPTIONS.map((opt) => (
-                  <button key={opt.label} onClick={() => setExpiry(opt.value)}>
-                    {opt.label}
+          {!selectionMode && (
+            <div className="bubble-menu" ref={menuRef}>
+              <button className="menu-trigger" onClick={() => setMenuOpen((v) => !v)} title="Opciones">
+                ⋮
+              </button>
+              {menuOpen && (
+                <div className="menu-dropdown">
+                  <button onClick={togglePin}>{message.pinned ? '📌 Desfijar' : '📌 Fijar'}</button>
+                  <div className="menu-separator" />
+                  {EXPIRY_OPTIONS.map((opt) => (
+                    <button key={opt.label} onClick={() => setExpiry(opt.value)}>
+                      {opt.label}
+                    </button>
+                  ))}
+                  <div className="menu-separator" />
+                  <button className="danger" onClick={remove}>
+                    🗑 Eliminar
                   </button>
-                ))}
-                <div className="menu-separator" />
-                <button className="danger" onClick={remove}>
-                  🗑 Eliminar
-                </button>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bubble-content">
