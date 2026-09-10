@@ -10,6 +10,7 @@
   --own-bubble-bg: #362a56;
   --own-bubble-border: #4f3d78;
   --danger: #f43f5e;
+  --success: #34d399;
 }
 
 * {
@@ -127,6 +128,12 @@ button:disabled {
   border-bottom: 1px solid var(--border);
 }
 
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.1em;
@@ -170,10 +177,38 @@ button:disabled {
   color: white;
 }
 
-.settings-trigger {
-  margin-left: auto;
+.icon-trigger {
   background: transparent;
   border: 1px solid var(--border);
+}
+
+.icon-trigger-first {
+  margin-left: auto;
+}
+
+.conn-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8em;
+  color: var(--text-dim);
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.conn-dot.offline {
+  background: var(--danger);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .chat-feed {
@@ -254,6 +289,33 @@ button:disabled {
 .bubble-filesize {
   color: var(--text-dim);
   font-size: 0.85em;
+}
+
+.bubble-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 2px 0;
+  font-size: 0.78em;
+  font-weight: 500;
+}
+
+.copy-btn:hover {
+  color: var(--accent-strong);
+  background: transparent;
+}
+
+.expiry-badge {
+  font-size: 0.75em;
+  color: var(--text-dim);
+  margin-left: auto;
 }
 
 .pin-badge {
@@ -409,6 +471,58 @@ button:disabled {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
+}
+
+.qr-image {
+  align-self: center;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+}
+
+.qr-link {
+  font-size: 0.78em;
+  color: var(--text-dim);
+  word-break: break-all;
+  text-align: center;
+  margin: 0;
+}
+
+.toast-stack {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 16px;
+}
+
+.toast {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.toast-error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.toast-success {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.toast-info {
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 @media (max-width: 480px) {

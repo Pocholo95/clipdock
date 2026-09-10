@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { api } from '../api.js';
+import { showToast } from '../toast.js';
 
 export default function Composer({ deviceId }) {
   const [text, setText] = useState('');
@@ -14,7 +15,8 @@ export default function Composer({ deviceId }) {
     try {
       await api.sendText(deviceId, content);
     } catch (err) {
-      console.error(err);
+      setText(content);
+      showToast('No se pudo enviar el mensaje', 'error');
     }
   }
 
@@ -26,7 +28,7 @@ export default function Composer({ deviceId }) {
         await api.uploadFile(deviceId, file);
       }
     } catch (err) {
-      console.error(err);
+      showToast(`No se pudo subir el archivo: ${err.message}`, 'error');
     } finally {
       setBusy(false);
     }
@@ -76,9 +78,9 @@ export default function Composer({ deviceId }) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={busy}
-          title="Adjuntar archivo"
+          title={busy ? 'Subiendo…' : 'Adjuntar archivo'}
         >
-          📎
+          {busy ? '⏳' : '📎'}
         </button>
         <input
           ref={fileInputRef}

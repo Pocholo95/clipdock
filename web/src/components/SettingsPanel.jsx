@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api.js';
+import { showToast } from '../toast.js';
 
 const PRESETS = [
   { label: 'Nunca limpiar', seconds: 0 },
@@ -17,6 +18,8 @@ export default function SettingsPanel({ settings, onClose, onSaved }) {
     try {
       const updated = await api.putSettings(seconds);
       onSaved(updated);
+    } catch {
+      showToast('No se pudo guardar la configuración', 'error');
     } finally {
       setSaving(false);
     }

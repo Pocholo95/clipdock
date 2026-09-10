@@ -1,11 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { api } from './api.js';
 import { connectSocket, disconnectSocket } from './socket.js';
+import { showToast } from './toast.js';
 import DeviceSetup from './components/DeviceSetup.jsx';
 import ChatFeed from './components/ChatFeed.jsx';
 import Composer from './components/Composer.jsx';
 import FilterBar from './components/FilterBar.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
+import AddDeviceModal from './components/AddDeviceModal.jsx';
+import ToastContainer from './components/ToastContainer.jsx';
 
 export default function App() {
   const [authStatus, setAuthStatus] = useState(null);
@@ -14,6 +17,18 @@ export default function App() {
   const [filter, setFilter] = useState('all');
   const [settings, setSettings] = useState({ defaultRetentionSeconds: 0 });
   const [showSettings, setShowSettings] = useState(false);
+  const [showAddDevice, setShowAddDevice] = useState(false);
+  const [connected, setConnected] = useState(true);
+  const wasConnected = useRef(true);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#pair=')) {
+      const token = decodeURIComponent(hash.slice('#pair='.length));
+      if (token) localStorage.setItem('clipboard_token', token);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, []);
 
   useEffect(() => {
     api.authStatus().then(setAuthStatus).catch(() => setAuthStatus({ authEnabled: false }));
@@ -45,6 +60,20 @@ export default function App() {
     api.getSettings().then((s) => active && setSettings(s));
 
     const socket = connectSocket();
+
+    socket.on('connect', () => {
+      setConnected(true);
+      if (!wasConnected.current) {
+        showToast('Conexión restablecida', 'success');
+      }
+      wasConnected.current = true;
+    });
+    socket.on('disconnect', () => {
+      setConnected(false);
+      wasConnected.current = false;
+      showToast('Se perdió la conexión, reconectando…', 'error');
+    });
+
     socket.on('message:new', (msg) => {
       setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
     });
@@ -76,10 +105,13 @@ export default function App() {
 
   if (!device) {
     return (
-      <DeviceSetup
-        needsPassphrase={authStatus.authEnabled && !localStorage.getItem('clipboard_token')}
-        onReady={(d) => setDevice({ id: d.id, name: d.name })}
-      />
+      <>
+        <DeviceSetup
+          needsPassphrase={authStatus.authEnabled && !localStorage.getItem('clipboard_token')}
+          onReady={(d) => setDevice({ id: d.id, name: d.name })}
+        />
+        <ToastContainer />
+      </>
     );
   }
 
@@ -88,13 +120,29 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Clipboard</h1>
+        <div className="app-header-left">
+          <h1>Clipboard</h1>
+          <div className="conn-indicator">
+            <span className={`conn-dot ${connected ? '' : 'offline'}`} />
+            {!connected && 'Reconectando…'}
+          </div>
+        </div>
         <span className="device-badge">{device.name}</span>
       </header>
 
-      <FilterBar value={filter} onChange={setFilter} onOpenSettings={() => setShowSettings(true)} />
+      <FilterBar
+        value={filter}
+        onChange={setFilter}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenAddDevice={() => setShowAddDevice(true)}
+      />
 
-      <ChatFeed messages={visibleMessages} currentDeviceId={device.id} onChanged={handleChanged} />
+      <ChatFeed
+        messages={visibleMessages}
+        currentDeviceId={device.id}
+        defaultRetentionSeconds={settings.defaultRetentionSeconds}
+        onChanged={handleChanged}
+      />
 
       <Composer deviceId={device.id} />
 
@@ -105,6 +153,10 @@ export default function App() {
           onSaved={setSettings}
         />
       )}
+
+      {showAddDevice && <AddDeviceModal onClose={() => setShowAddDevice(false)} />}
+
+      <ToastContainer />
     </div>
   );
 }

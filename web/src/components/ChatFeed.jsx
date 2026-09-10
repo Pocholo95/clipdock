@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble.jsx';
 
-export default function ChatFeed({ messages, currentDeviceId, onChanged }) {
+export default function ChatFeed({ messages, currentDeviceId, defaultRetentionSeconds, onChanged }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -16,6 +16,7 @@ export default function ChatFeed({ messages, currentDeviceId, onChanged }) {
           key={message.id}
           message={message}
           isOwn={message.deviceId === currentDeviceId}
+          defaultRetentionSeconds={defaultRetentionSeconds}
           onChanged={onChanged}
         />
       ))}

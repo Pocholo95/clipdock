@@ -1,3 +1,5 @@
+import { showToast } from './toast.js';
+
 function authHeaders() {
   const token = localStorage.getItem('clipboard_token');
   return token ? { 'X-Clipboard-Token': token } : {};
@@ -16,6 +18,9 @@ async function request(path, options = {}) {
   if (res.status === 401) {
     localStorage.removeItem('clipboard_token');
     window.dispatchEvent(new Event('clipboard:unauthorized'));
+    if (path !== '/login') {
+      showToast('Tu sesión expiró, inicia sesión de nuevo', 'error');
+    }
     throw new Error('unauthorized');
   }
 

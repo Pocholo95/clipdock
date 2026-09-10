@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, fileUrlWithToken } from '../api.js';
+import { showToast } from '../toast.js';
 
 const EXPIRY_OPTIONS = [
   { label: 'Usar retención global', value: 'default' },
@@ -20,8 +21,32 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function MessageBubble({ message, isOwn, onChanged }) {
+function formatCountdown(ms) {
+  if (ms <= 0) return 'en instantes';
+  const minutes = Math.round(ms / 60_000);
+  if (minutes < 1) return 'en instantes';
+  if (minutes < 60) return `en ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `en ${hours} h`;
+  const days = Math.round(hours / 24);
+  return `en ${days} d`;
+}
+
+function getExpiryLabel(message, defaultRetentionSeconds) {
+  if (message.pinned) return null;
+  if (message.customExpiresAt === 0) return 'No se borra';
+
+  const effectiveExpiresAt =
+    message.customExpiresAt != null ? message.customExpiresAt : defaultRetentionSeconds > 0 ? message.createdAt + defaultRetentionSeconds * 1000 : null;
+
+  if (!effectiveExpiresAt) return null;
+  return `Se borra ${formatCountdown(effectiveExpiresAt - Date.now())}`;
+}
+
+export default function MessageBubble({ message, isOwn, defaultRetentionSeconds, onChanged }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [, setTick] = useState(0);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -42,25 +67,54 @@ export default function MessageBubble({ message, isOwn, onChanged }) {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   async function togglePin() {
     setMenuOpen(false);
-    const updated = await api.patchMessage(message.id, { pinned: !message.pinned });
-    onChanged(updated);
+    try {
+      const updated = await api.patchMessage(message.id, { pinned: !message.pinned });
+      onChanged(updated);
+    } catch {
+      showToast('No se pudo actualizar el mensaje', 'error');
+    }
   }
 
   async function setExpiry(option) {
     setMenuOpen(false);
     const customExpiresAt = option === 'default' ? null : option === 'never' ? 0 : Date.now() + option;
-    const updated = await api.patchMessage(message.id, { customExpiresAt });
-    onChanged(updated);
+    try {
+      const updated = await api.patchMessage(message.id, { customExpiresAt });
+      onChanged(updated);
+    } catch {
+      showToast('No se pudo actualizar la limpieza del mensaje', 'error');
+    }
   }
 
   async function remove() {
     setMenuOpen(false);
     if (!window.confirm('¿Eliminar este mensaje?')) return;
-    await api.deleteMessage(message.id);
-    onChanged(null, message.id);
+    try {
+      await api.deleteMessage(message.id);
+      onChanged(null, message.id);
+    } catch {
+      showToast('No se pudo eliminar el mensaje', 'error');
+    }
   }
+
+  async function copyContent() {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      showToast('No se pudo copiar', 'error');
+    }
+  }
+
+  const expiryLabel = getExpiryLabel(message, defaultRetentionSeconds);
 
   return (
     <div className={`bubble-row ${isOwn ? 'own' : ''}`}>
@@ -109,6 +163,15 @@ export default function MessageBubble({ message, isOwn, onChanged }) {
               📄 {message.fileName} <span className="bubble-filesize">{formatSize(message.sizeBytes)}</span>
             </a>
           )}
+        </div>
+
+        <div className="bubble-footer">
+          {(message.type === 'text' || message.type === 'link') && (
+            <button className="copy-btn" onClick={copyContent} title="Copiar al portapapeles">
+              {copied ? '✅ Copiado' : '📋 Copiar'}
+            </button>
+          )}
+          {expiryLabel && <span className="expiry-badge">{expiryLabel}</span>}
         </div>
       </div>
     </div>
