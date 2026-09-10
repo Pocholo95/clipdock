@@ -1,0 +1,14 @@
+services:
+  clipboard:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./data:/data
+    environment:
+      PORT: 3000
+      DEFAULT_RETENTION_SECONDS: ${DEFAULT_RETENTION_SECONDS:-86400}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-200}
+      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      AUTH_PASSPHRASE: ${AUTH_PASSPHRASE:-}

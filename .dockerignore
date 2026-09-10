@@ -1,0 +1,6 @@
+**/node_modules
+server/data
+server/web-dist
+web/dist
+.git
+.env
